@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "crawler.fullname" . }}-service1
+  labels:
+    app: {{ include "crawler.name" . }}-service1
+    chart: {{ include "crawler.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.service1.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "crawler.name" . }}-service1
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "crawler.name" . }}-service1
+        release: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: service1
+          image: "{{ .Values.service1.image.repository }}:{{ .Values.service1.image.tag }}"
+          imagePullPolicy: {{ .Values.service1.image.pullPolicy }}
+          env:
+            - name: TEMPORAL_ADDRESS
+              value: "host.minikube.internal:8233"
+            - name: TEMPORAL_NAMESPACE
+              value: "default"
+          resources:
+{{ toYaml .Values.service1.resources | indent 12 }} 

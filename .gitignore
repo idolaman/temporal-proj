@@ -1,0 +1,48 @@
+*.exe
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Object files and archives
+*.o
+*.a
+
+# Coverage & profiling data
+*.coverprofile
+*.cov
+coverage.*
+
+# Logs
+*.log
+
+# Build output directories
+bin/
+dist/
+
+# Go vendor directory (uncomment if you do NOT vendor deps)
+# vendor/
+
+# Editor & IDE settings
+.vscode/
+.idea/
+*.swp
+*.swo
+*.swn
+*~
+
+# OS-generated files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Helm packaged charts
+*.tgz
+
+# Terraform / Pulumi (if ever used)
+*.tfstate*
+.terraform/
+
+# Misc
+*.orig 

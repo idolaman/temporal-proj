@@ -1,0 +1,36 @@
+# Service1 (Temporal Worker) configuration
+service1:
+  replicaCount: 2
+  image:
+    repository: crawler/service1
+    tag: latest
+    pullPolicy: IfNotPresent
+  
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+# Service2 (REST API + Temporal Client) configuration
+service2:
+  replicaCount: 2
+  image:
+    repository: crawler/service2
+    tag: latest
+    pullPolicy: IfNotPresent
+  
+  service:
+    type: NodePort
+    port: 8080
+    nodePort: 30080
+  
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi 

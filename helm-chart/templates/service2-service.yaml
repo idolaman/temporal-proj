@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "crawler.fullname" . }}-service2
+  labels:
+    app: {{ include "crawler.name" . }}-service2
+    chart: {{ include "crawler.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  type: {{ .Values.service2.service.type }}
+  ports:
+    - port: {{ .Values.service2.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+      nodePort: {{ .Values.service2.service.nodePort }}
+  selector:
+    app: {{ include "crawler.name" . }}-service2
+    release: {{ .Release.Name }} 
