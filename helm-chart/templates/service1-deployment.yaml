@@ -25,8 +25,8 @@ spec:
           imagePullPolicy: {{ .Values.service1.image.pullPolicy }}
           env:
             - name: TEMPORAL_ADDRESS
-              value: "host.minikube.internal:8233"
+              value: '{{ include "crawler.fullname" . }}-temporal:7233'
             - name: TEMPORAL_NAMESPACE
               value: "default"
           resources:
-{{ toYaml .Values.service1.resources | indent 12 }} 
+            {{- toYaml .Values.service1.resources | nindent 12 }} 

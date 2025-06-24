@@ -29,11 +29,11 @@ spec:
               protocol: TCP
           env:
             - name: TEMPORAL_ADDRESS
-              value: "host.minikube.internal:8233"
+              value: '{{ include "crawler.fullname" . }}-temporal:7233'
             - name: TEMPORAL_NAMESPACE
               value: "default"
             - name: DB_HOST
-              value: "host.minikube.internal"
+              value: '{{ include "crawler.fullname" . }}-postgres'
             - name: DB_PORT
               value: "5432"
             - name: DB_USER
@@ -45,4 +45,4 @@ spec:
             - name: GIN_MODE
               value: "release"
           resources:
-{{ toYaml .Values.service2.resources | indent 12 }} 
+            {{- toYaml .Values.service2.resources | nindent 12 }} 

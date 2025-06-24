@@ -1,3 +1,6 @@
+nameOverride: ""
+fullnameOverride: ""
+
 # Service1 (Temporal Worker) configuration
 service1:
   replicaCount: 2
@@ -31,6 +34,37 @@ service2:
     limits:
       cpu: 500m
       memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+# Temporal server (development only)
+temporal:
+  image:
+    repository: temporalio/auto-setup
+    tag: latest
+    pullPolicy: IfNotPresent
+  replicaCount: 1
+  service:
+    port: 7233
+    metricsPort: 8233
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+# PostgreSQL (development only)
+postgres:
+  image:
+    repository: postgres
+    tag: 16
+    pullPolicy: IfNotPresent
+  replicaCount: 1
+  persistence:
+    enabled: false 
+  service:
+    port: 5432
+  resources:
     requests:
       cpu: 100m
       memory: 128Mi 

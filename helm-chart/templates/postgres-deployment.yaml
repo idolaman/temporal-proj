@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "crawler.fullname" . }}-postgres
+  labels:
+    app: {{ include "crawler.name" . }}-postgres
+    chart: {{ include "crawler.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.postgres.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "crawler.name" . }}-postgres
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "crawler.name" . }}-postgres
+        release: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: postgres
+          image: "{{ .Values.postgres.image.repository }}:{{ .Values.postgres.image.tag }}"
+          imagePullPolicy: {{ .Values.postgres.image.pullPolicy }}
+          ports:
+            - name: db
+              containerPort: 5432
+              protocol: TCP
+          env:
+            - name: POSTGRES_DB
+              value: "crawler"
+            - name: POSTGRES_USER
+              value: "postgres"
+            - name: POSTGRES_PASSWORD
+              value: "password"
+          resources:
+{{ toYaml .Values.postgres.resources | indent 12 }}
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: data
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "crawler.fullname" . }}-postgres
+  labels:
+    app: {{ include "crawler.name" . }}-postgres
+    release: {{ .Release.Name }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.postgres.service.port }}
+      targetPort: db
+      protocol: TCP
+      name: db
+  selector:
+    app: {{ include "crawler.name" . }}-postgres
+    release: {{ .Release.Name }} 
