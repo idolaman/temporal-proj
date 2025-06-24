@@ -2,15 +2,15 @@ package models
 
 import "time"
 
-// ScanTask represents a request to scan a URL for links
-// It is shared between Service #1 (worker) and Service #2 (client/API).
+// ScanTask represents a request to scan a URL for links.
+// It is shared between the API layer and Temporal workflows.
 type ScanTask struct {
 	URL       string    `json:"url"`
 	Timestamp time.Time `json:"timestamp"`
 }
 
-// ScanResult represents the result of scanning a URL
-// Produced by Service #1 and consumed by Service #2.
+// ScanResult represents the outcome of a scan workflow.
+// Produced by the workflow and consumed by the API/service layer.
 type ScanResult struct {
 	SourceURL   string    `json:"source_url"`
 	Links       []string  `json:"links"`

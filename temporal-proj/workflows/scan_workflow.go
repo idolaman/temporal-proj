@@ -1,4 +1,4 @@
-package main
+package workflows
 
 import (
 	"time"
@@ -6,12 +6,11 @@ import (
 	"go.temporal.io/sdk/temporal"
 	"go.temporal.io/sdk/workflow"
 
-	"nomaproj/pkg/models"
+	"temporal-proj/pkg/models"
 )
 
 type ScannerWorkflow struct{}
 
-// ScanURLWorkflow is the main workflow function for scanning URLs
 func (w *ScannerWorkflow) ScanURLWorkflow(ctx workflow.Context, task models.ScanTask) (models.ScanResult, error) {
 	logger := workflow.GetLogger(ctx)
 	logger.Info("Starting ScanURL workflow", "url", task.URL)
