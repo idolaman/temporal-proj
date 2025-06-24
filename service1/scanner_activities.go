@@ -36,13 +36,11 @@ func (s *ScannerActivities) ScanURL(ctx context.Context, task models.ScanTask) (
 		Success:     false,
 	}
 
-	// Validate URL
 	if !isValidURL(task.URL) {
 		result.Error = "Invalid URL"
 		return result, nil
 	}
 
-	// Make HTTP request
 	resp, err := s.client.Get(task.URL)
 	if err != nil {
 		result.Error = fmt.Sprintf("Failed to fetch URL: %v", err)
@@ -55,7 +53,6 @@ func (s *ScannerActivities) ScanURL(ctx context.Context, task models.ScanTask) (
 		return result, nil
 	}
 
-	// Parse HTML and extract links
 	doc, err := goquery.NewDocumentFromReader(resp.Body)
 	if err != nil {
 		result.Error = fmt.Sprintf("Failed to parse HTML: %v", err)
@@ -75,22 +72,36 @@ func (s *ScannerActivities) ScanURL(ctx context.Context, task models.ScanTask) (
 // extractLinks finds all absolute links referenced in the document.
 func (s *ScannerActivities) extractLinks(doc *goquery.Document, baseURL string) []string {
 	var links []string
-	linkMap := make(map[string]bool) // To avoid duplicates
+	linkMap := make(map[string]bool)
 
-	// Extract all anchor tags with href
+	// Determine base host once
+	baseParsed, err := url.Parse(baseURL)
+	var baseHost string
+	if err == nil {
+		baseHost = baseParsed.Host
+	}
+
 	doc.Find("a[href]").Each(func(i int, sel *goquery.Selection) {
 		href, exists := sel.Attr("href")
 		if !exists {
 			return
 		}
 
-		// Convert relative URLs to absolute
-		absoluteURL := resolveURL(baseURL, href)
+		abs := resolveURL(baseURL, href)
 
-		// Accept only HTTP/HTTPS links and avoid duplicates
-		if isValidURL(absoluteURL) && !linkMap[absoluteURL] {
-			links = append(links, absoluteURL)
-			linkMap[absoluteURL] = true
+		if !isValidURL(abs) {
+			return
+		}
+
+		// Keep only links whose host matches the base page host (same domain)
+		parsed, err := url.Parse(abs)
+		if err != nil || parsed.Host != baseHost {
+			return
+		}
+
+		if !linkMap[abs] {
+			links = append(links, abs)
+			linkMap[abs] = true
 		}
 	})
 
