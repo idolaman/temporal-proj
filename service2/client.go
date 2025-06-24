@@ -7,33 +7,22 @@ import (
 	"time"
 
 	"go.temporal.io/sdk/client"
+
+	"nomaproj/pkg/models"
+	"nomaproj/pkg/utils"
 )
-
-// Service #1 models (copied for simplicity)
-type ScanTask struct {
-	URL       string    `json:"url"`
-	RequestID string    `json:"request_id"`
-	Timestamp time.Time `json:"timestamp"`
-}
-
-type ScanResult struct {
-	SourceURL   string    `json:"source_url"`
-	Links       []string  `json:"links"`
-	TotalLinks  int       `json:"total_links"`
-	ProcessedAt time.Time `json:"processed_at"`
-	Success     bool      `json:"success"`
-	Error       string    `json:"error,omitempty"`
-	RequestID   string    `json:"request_id"`
-}
 
 type TemporalClient struct {
 	client client.Client
 }
 
 func NewTemporalClient() (*TemporalClient, error) {
+	hostPort := utils.GetEnvOrDefault("TEMPORAL_ADDRESS", "localhost:7233")
+	namespace := utils.GetEnvOrDefault("TEMPORAL_NAMESPACE", "default")
+
 	c, err := client.Dial(client.Options{
-		HostPort:  "localhost:7233",
-		Namespace: "default",
+		HostPort:  hostPort,
+		Namespace: namespace,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to Temporal: %w", err)
@@ -44,9 +33,8 @@ func NewTemporalClient() (*TemporalClient, error) {
 }
 
 func (tc *TemporalClient) StartScan(ctx context.Context, url string, scanID uint) error {
-	task := ScanTask{
+	task := models.ScanTask{
 		URL:       url,
-		RequestID: fmt.Sprintf("scan-%d", scanID),
 		Timestamp: time.Now(),
 	}
 
@@ -65,11 +53,11 @@ func (tc *TemporalClient) StartScan(ctx context.Context, url string, scanID uint
 	return nil
 }
 
-func (tc *TemporalClient) GetScanResult(ctx context.Context, scanID uint) (*ScanResult, error) {
+func (tc *TemporalClient) GetScanResult(ctx context.Context, scanID uint) (*models.ScanResult, error) {
 	workflowID := fmt.Sprintf("scan-workflow-%d", scanID)
 	workflowRun := tc.client.GetWorkflow(ctx, workflowID, "")
 
-	var result ScanResult
+	var result models.ScanResult
 	err := workflowRun.Get(ctx, &result)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get workflow result: %w", err)

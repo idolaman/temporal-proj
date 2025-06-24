@@ -2,9 +2,12 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
+
+	"nomaproj/pkg/utils"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/postgres"
@@ -37,7 +40,12 @@ var temporalClient *TemporalClient
 func main() {
 	// Connect to database
 	var err error
-	dsn := "host=localhost port=5432 user=postgres password=password dbname=crawler sslmode=disable"
+	dbHost := utils.GetEnvOrDefault("DB_HOST", "localhost")
+	dbPort := utils.GetEnvOrDefault("DB_PORT", "5432")
+	dbUser := utils.GetEnvOrDefault("DB_USER", "postgres")
+	dbPassword := utils.GetEnvOrDefault("DB_PASSWORD", "password")
+	dbName := utils.GetEnvOrDefault("DB_NAME", "crawler")
+	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", dbHost, dbPort, dbUser, dbPassword, dbName)
 	db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatal("Database connection failed:", err)
@@ -58,8 +66,9 @@ func main() {
 	router.Use(gin.Recovery())
 	router.POST("/scan", handleScan)
 
-	log.Println("Service #2 running on :8080")
-	log.Fatal(router.Run(":8080"))
+	port := utils.GetEnvOrDefault("PORT", "8080")
+	log.Printf("Service #2 running on :%s", port)
+	log.Fatal(router.Run(":" + port))
 }
 
 func handleScan(c *gin.Context) {

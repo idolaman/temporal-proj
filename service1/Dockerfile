@@ -5,13 +5,17 @@ FROM golang:1.24-alpine AS builder
 WORKDIR /app
 
 # Copy go mod files
-COPY go.mod go.sum ./
+COPY service1/go.mod service1/go.sum ./
+# Copy shared models so replace works
+COPY pkg/models /pkg/models
+# Copy shared utils package
+COPY pkg/utils /pkg/utils
 
 # Download dependencies
 RUN go mod download
 
 # Copy source code
-COPY . .
+COPY service1/. .
 
 # Build the application
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o service1 .

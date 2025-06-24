@@ -6,25 +6,24 @@ import (
 	"os/signal"
 	"syscall"
 
+	"nomaproj/pkg/utils"
+
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
 )
 
 const (
-	// Temporal connection settings
 	DefaultTemporalAddress = "localhost:7233"
 	DefaultNamespace       = "default"
 
-	// Task queue settings
 	TaskQueueName = "url-scanner-task-queue"
 )
 
 func main() {
 	log.Println("Starting URL Scanner Service (Service #1)")
 
-	// Create Temporal client
-	temporalAddress := getEnvOrDefault("TEMPORAL_ADDRESS", DefaultTemporalAddress)
-	namespace := getEnvOrDefault("TEMPORAL_NAMESPACE", DefaultNamespace)
+	temporalAddress := utils.GetEnvOrDefault("TEMPORAL_ADDRESS", DefaultTemporalAddress)
+	namespace := utils.GetEnvOrDefault("TEMPORAL_NAMESPACE", DefaultNamespace)
 
 	clientOptions := client.Options{
 		HostPort:  temporalAddress,
@@ -49,7 +48,6 @@ func main() {
 
 	log.Printf("Registered workflow and activity on task queue: %s", TaskQueueName)
 
-	// Start worker
 	log.Println("Starting worker...")
 	go func() {
 		err := w.Run(worker.InterruptCh())
@@ -70,10 +68,3 @@ func main() {
 	log.Println("URL Scanner Service stopped")
 }
 
-// getEnvOrDefault returns the environment variable value or default if not set
-func getEnvOrDefault(key, defaultValue string) string {
-	if value := os.Getenv(key); value != "" {
-		return value
-	}
-	return defaultValue
-} 

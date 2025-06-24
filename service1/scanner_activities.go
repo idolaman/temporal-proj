@@ -5,19 +5,18 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"strings"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
 	"go.temporal.io/sdk/activity"
+
+	"nomaproj/pkg/models"
 )
 
-// ScannerActivities contains all the activities for URL scanning
 type ScannerActivities struct {
 	client *http.Client
 }
 
-// NewScannerActivities creates a new instance of ScannerActivities
 func NewScannerActivities() *ScannerActivities {
 	return &ScannerActivities{
 		client: &http.Client{
@@ -26,21 +25,20 @@ func NewScannerActivities() *ScannerActivities {
 	}
 }
 
-// ScanURL scans a URL and extracts all Wikipedia links
-func (s *ScannerActivities) ScanURL(ctx context.Context, task ScanTask) (ScanResult, error) {
+// ScanURL scans a URL and extracts all outgoing links (same domain or external).
+func (s *ScannerActivities) ScanURL(ctx context.Context, task models.ScanTask) (models.ScanResult, error) {
 	logger := activity.GetLogger(ctx)
-	logger.Info("Starting URL scan", "url", task.URL, "request_id", task.RequestID)
+	logger.Info("Starting URL scan", "url", task.URL)
 
-	result := ScanResult{
+	result := models.ScanResult{
 		SourceURL:   task.URL,
-		RequestID:   task.RequestID,
 		ProcessedAt: time.Now(),
 		Success:     false,
 	}
 
 	// Validate URL
-	if !isValidWikipediaURL(task.URL) {
-		result.Error = "Invalid Wikipedia URL"
+	if !isValidURL(task.URL) {
+		result.Error = "Invalid URL"
 		return result, nil
 	}
 
@@ -64,7 +62,7 @@ func (s *ScannerActivities) ScanURL(ctx context.Context, task ScanTask) (ScanRes
 		return result, nil
 	}
 
-	links := s.extractWikipediaLinks(doc, task.URL)
+	links := s.extractLinks(doc, task.URL)
 
 	result.Links = links
 	result.TotalLinks = len(links)
@@ -74,13 +72,13 @@ func (s *ScannerActivities) ScanURL(ctx context.Context, task ScanTask) (ScanRes
 	return result, nil
 }
 
-// extractWikipediaLinks extracts all Wikipedia links from the document
-func (s *ScannerActivities) extractWikipediaLinks(doc *goquery.Document, baseURL string) []string {
+// extractLinks finds all absolute links referenced in the document.
+func (s *ScannerActivities) extractLinks(doc *goquery.Document, baseURL string) []string {
 	var links []string
 	linkMap := make(map[string]bool) // To avoid duplicates
 
-	// Extract all links from the content area
-	doc.Find("#mw-content-text a[href]").Each(func(i int, sel *goquery.Selection) {
+	// Extract all anchor tags with href
+	doc.Find("a[href]").Each(func(i int, sel *goquery.Selection) {
 		href, exists := sel.Attr("href")
 		if !exists {
 			return
@@ -89,8 +87,8 @@ func (s *ScannerActivities) extractWikipediaLinks(doc *goquery.Document, baseURL
 		// Convert relative URLs to absolute
 		absoluteURL := resolveURL(baseURL, href)
 
-		// Filter for Wikipedia links only
-		if isValidWikipediaURL(absoluteURL) && !linkMap[absoluteURL] {
+		// Accept only HTTP/HTTPS links and avoid duplicates
+		if isValidURL(absoluteURL) && !linkMap[absoluteURL] {
 			links = append(links, absoluteURL)
 			linkMap[absoluteURL] = true
 		}
@@ -99,8 +97,8 @@ func (s *ScannerActivities) extractWikipediaLinks(doc *goquery.Document, baseURL
 	return links
 }
 
-// isValidWikipediaURL checks if the URL is a valid Wikipedia article URL
-func isValidWikipediaURL(urlStr string) bool {
+// isValidURL does a basic sanity check for http/https URLs.
+func isValidURL(urlStr string) bool {
 	if urlStr == "" {
 		return false
 	}
@@ -110,31 +108,8 @@ func isValidWikipediaURL(urlStr string) bool {
 		return false
 	}
 
-	// Check if it's a Wikipedia domain
-	if !strings.Contains(parsedURL.Host, "wikipedia.org") {
+	if parsedURL.Scheme != "http" && parsedURL.Scheme != "https" {
 		return false
-	}
-
-	// Check if it's an article URL (contains /wiki/)
-	if !strings.Contains(parsedURL.Path, "/wiki/") {
-		return false
-	}
-
-	// Exclude certain types of pages
-	excludedPrefixes := []string{
-		"/wiki/File:",
-		"/wiki/Category:",
-		"/wiki/Template:",
-		"/wiki/Help:",
-		"/wiki/Special:",
-		"/wiki/User:",
-		"/wiki/Talk:",
-	}
-
-	for _, prefix := range excludedPrefixes {
-		if strings.HasPrefix(parsedURL.Path, prefix) {
-			return false
-		}
 	}
 
 	return true
@@ -153,4 +128,4 @@ func resolveURL(baseURL, href string) string {
 	}
 
 	return base.ResolveReference(rel).String()
-} 
+}

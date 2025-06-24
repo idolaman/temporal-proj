@@ -37,3 +37,9 @@ require (
 	google.golang.org/protobuf v1.34.2 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+require nomaproj/pkg/models v0.0.0
+require nomaproj/pkg/utils v0.0.0
+
+replace nomaproj/pkg/models => ../pkg/models
+replace nomaproj/pkg/utils => ../pkg/utils
