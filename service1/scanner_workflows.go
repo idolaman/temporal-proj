@@ -9,7 +9,6 @@ import (
 	"nomaproj/pkg/models"
 )
 
-// ScannerWorkflow defines the workflow for URL scanning
 type ScannerWorkflow struct{}
 
 // ScanURLWorkflow is the main workflow function for scanning URLs

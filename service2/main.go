@@ -14,11 +14,12 @@ import (
 	"gorm.io/gorm"
 )
 
-// Models
+// ScanRequest is the JSON payload sent to the /scan endpoint.
 type ScanRequest struct {
 	URL string `json:"url" binding:"required"`
 }
 
+// Scan represents a row in the "scans" table.
 type Scan struct {
 	ID        uint   `gorm:"primaryKey"`
 	URL       string `gorm:"not null"`
@@ -27,18 +28,17 @@ type Scan struct {
 	CreatedAt time.Time
 }
 
+// Link represents a row in the "links" table.
 type Link struct {
 	ID     uint   `gorm:"primaryKey"`
 	ScanID uint   `gorm:"not null"`
 	URL    string `gorm:"not null"`
 }
 
-// Global variables
 var db *gorm.DB
 var temporalClient *TemporalClient
 
 func main() {
-	// Connect to database
 	var err error
 	dbHost := utils.GetEnvOrDefault("DB_HOST", "localhost")
 	dbPort := utils.GetEnvOrDefault("DB_PORT", "5432")
