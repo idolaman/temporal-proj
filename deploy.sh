@@ -16,12 +16,18 @@ success "Deploying crawler services to Docker Desktop Kubernetes..."
 info "Switching kubectl context to 'docker-desktop'..."
 kubectl config use-context docker-desktop >/dev/null
 
-# Build Docker images (Docker Desktop shares daemon with its Kubernetes cluster)
-info "Building service1 image..."
-docker build -t crawler/service1:latest -f service1/Dockerfile .
+# Change to the Go module directory
+cd temporal-proj
 
-info "Building service2 image..."
-docker build -t crawler/service2:latest -f service2/Dockerfile .
+# Build Docker images (Docker Desktop shares daemon with its Kubernetes cluster)
+info "Building broker image..."
+docker build -t crawler/broker:latest -f cmd/broker/Dockerfile .
+
+info "Building broker-manager image..."
+docker build -t crawler/broker-manager:latest -f cmd/broker-manager/Dockerfile .
+
+# Change back to root directory for Helm deployment
+cd ..
 
 # Deploy using Helm
 info "Deploying with Helm..."
@@ -30,5 +36,5 @@ helm upgrade --install crawler ./helm-chart/
 success "Deployment complete!"
 
 NODE_PORT=30080
-printf "\n${CYAN}Service #2 (NodePort) should be reachable at:${RESET}\n"
+printf "\n${CYAN}Broker Manager (NodePort) should be reachable at:${RESET}\n"
 printf "http://localhost:%s\n" "$NODE_PORT" 
