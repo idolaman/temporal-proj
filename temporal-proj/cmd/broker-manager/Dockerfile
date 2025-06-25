@@ -27,13 +27,4 @@ COPY --from=builder /broker-manager ./
 
 EXPOSE 8080
 
-ENV TEMPORAL_ADDRESS=temporal:7233
-ENV TEMPORAL_NAMESPACE=default
-ENV DB_HOST=postgres
-ENV DB_PORT=5432
-ENV DB_USER=postgres
-ENV DB_PASSWORD=password
-ENV DB_NAME=crawler
-ENV GIN_MODE=release
-
 CMD ["./broker-manager"] 
