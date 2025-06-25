@@ -5,17 +5,21 @@ import (
 	"log"
 
 	acts "temporal-proj/activities"
-	temporal "temporal-proj/temporal"
+	temporal "temporal-proj/workflowmgmt/temporal"
 	wflows "temporal-proj/workflows"
 )
 
 func main() {
-	// Temporal client for scan workflow
-	exec, err := temporal.NewClient("ScanURLWorkflow", "url-scanner-task-queue")
+	client, err := temporal.NewClient("ScanURLWorkflow", "url-scanner-task-queue")
 	if err != nil {
 		log.Fatalf("Failed to create Temporal client: %v", err)
 	}
-	defer exec.Close()
+	defer client.Close()
+
+	temporalClient, ok := client.(*temporal.Client)
+	if !ok {
+		log.Fatalf("Failed to get temporal client")
+	}
 
 	opts := temporal.WorkerOpts{
 		TaskQueue:  "url-scanner-task-queue",
@@ -24,7 +28,7 @@ func main() {
 	}
 
 	ctx := context.Background()
-	if err := temporal.RunWorker(ctx, exec, opts); err != nil {
+	if err := temporal.RunWorker(ctx, temporalClient, opts); err != nil {
 		log.Fatalf("Worker exited with error: %v", err)
 	}
 }
