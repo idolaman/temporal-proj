@@ -33,7 +33,6 @@ func RunWorker(ctx context.Context, exec *Client, opts WorkerOpts) error {
 
 	log.Printf("Registered %d workflows and %d activities on task queue %s", len(opts.Workflows), len(opts.Activities), opts.TaskQueue)
 
-	// Run worker in background so we can capture shutdown signals.
 	go func() {
 		if err := w.Run(worker.InterruptCh()); err != nil {
 			log.Fatalf("Worker runtime error: %v", err)

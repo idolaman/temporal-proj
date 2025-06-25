@@ -5,17 +5,17 @@ import (
 	"fmt"
 	"log"
 	"time"
-	"temporal-proj/temporal"
+	"temporal-proj/workflowmgmt"
 	"temporal-proj/pkg/models"
 	repo "temporal-proj/repository"
 )
 
 type Coordinator struct {
 	repo repo.ScanRepository
-	wf   WorkflowExecutor
+	wf   workflowmgmt.WorkflowClient
 }
 
-func NewCoordinator(r repo.ScanRepository, wf WorkflowExecutor) *Coordinator {
+func NewCoordinator(r repo.ScanRepository, wf workflowmgmt.WorkflowClient) *Coordinator {
 	return &Coordinator{repo: r, wf: wf}
 }
 
