@@ -1,28 +1,28 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "crawler.fullname" . }}-service2
+  name: {{ include "crawler.fullname" . }}-broker-manager
   labels:
-    app: {{ include "crawler.name" . }}-service2
+    app: {{ include "crawler.name" . }}-broker-manager
     chart: {{ include "crawler.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
 spec:
-  replicas: {{ .Values.service2.replicaCount }}
+  replicas: {{ .Values.brokerManager.replicaCount }}
   selector:
     matchLabels:
-      app: {{ include "crawler.name" . }}-service2
+      app: {{ include "crawler.name" . }}-broker-manager
       release: {{ .Release.Name }}
   template:
     metadata:
       labels:
-        app: {{ include "crawler.name" . }}-service2
+        app: {{ include "crawler.name" . }}-broker-manager
         release: {{ .Release.Name }}
     spec:
       containers:
-        - name: service2
-          image: "{{ .Values.service2.image.repository }}:{{ .Values.service2.image.tag }}"
-          imagePullPolicy: {{ .Values.service2.image.pullPolicy }}
+        - name: broker-manager
+          image: "{{ .Values.brokerManager.image.repository }}:{{ .Values.brokerManager.image.tag }}"
+          imagePullPolicy: {{ .Values.brokerManager.image.pullPolicy }}
           ports:
             - name: http
               containerPort: 8080
@@ -45,4 +45,4 @@ spec:
             - name: GIN_MODE
               value: "release"
           resources:
-            {{- toYaml .Values.service2.resources | nindent 12 }} 
+            {{- toYaml .Values.brokerManager.resources | nindent 12 }} 

@@ -1,11 +1,11 @@
 nameOverride: ""
 fullnameOverride: ""
 
-# Service1 (Temporal Worker) configuration
-service1:
+# Broker (Temporal Worker) configuration
+broker:
   replicaCount: 2
   image:
-    repository: crawler/service1
+    repository: crawler/broker
     tag: latest
     pullPolicy: IfNotPresent
   
@@ -17,11 +17,11 @@ service1:
       cpu: 100m
       memory: 128Mi
 
-# Service2 (REST API + Temporal Client) configuration
-service2:
+# Broker Manager (REST API + Temporal Client) configuration
+brokerManager:
   replicaCount: 2
   image:
-    repository: crawler/service2
+    repository: crawler/broker-manager
     tag: latest
     pullPolicy: IfNotPresent
   
